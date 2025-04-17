@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaSearch, FaTimes, FaHistory } from "react-icons/fa";
 import searchService from "../services/searchApi";
+import SearchFiltersAndResults from "./SearchFiltersAndResults";
 
 const SearchBar = ({ darkNavbar }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,30 +19,10 @@ const SearchBar = ({ darkNavbar }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
   const searchRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
-
-  // Categories for filtering results
-  const categories = [
-    { id: "all", name: "All" },
-    { id: "dresses", name: "Dresses" },
-    { id: "tops", name: "Tops" },
-    { id: "bottoms", name: "Bottoms" },
-    { id: "accessories", name: "Accessories" },
-  ];
-
-  // Color options
-  const colorOptions = [
-    { id: "white", color: "#FFFFFF", border: true },
-    { id: "black", color: "#000000" },
-    { id: "beige", color: "#F5F5DC", border: true },
-    { id: "pink", color: "#FFC0CB" },
-    { id: "purple", color: "#800080" },
-  ];
-
-  // Size options
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
 
   // Close search when clicking outside
   useEffect(() => {
@@ -75,9 +56,6 @@ const SearchBar = ({ darkNavbar }) => {
         }
       }
     }
-
-    // Cleanup function
-    return () => {};
   }, [isOpen]);
 
   // Search functionality with debouncing
@@ -87,10 +65,12 @@ const SearchBar = ({ darkNavbar }) => {
         performSearch();
         fetchSuggestions();
         setShowSuggestions(true);
+        setShowFilters(true); // Show filters when search is performed
       } else {
         setSearchResults([]);
         setSuggestions([]);
         setShowSuggestions(false);
+        setShowFilters(false); // Hide filters when search is cleared
       }
     }, 500);
 
@@ -166,6 +146,7 @@ const SearchBar = ({ darkNavbar }) => {
     setSelectedColor(null);
     setSelectedSize(null);
     setSelectedCategory("all");
+    setShowFilters(false);
   };
 
   const handleResultClick = (productId) => {
@@ -198,6 +179,7 @@ const SearchBar = ({ darkNavbar }) => {
   const handleClearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
+    setShowFilters(false);
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -241,7 +223,7 @@ const SearchBar = ({ darkNavbar }) => {
         />
       </button>
 
-      {/* Search dropdown */}
+      {/* Search dropdown - upper part (search input) */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -249,8 +231,7 @@ const SearchBar = ({ darkNavbar }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed left-0 top-[60px] w-full bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-200 z-50 overflow-hidden"
-            style={{ maxHeight: '80vh', overflowY: 'auto' }}
+            className="fixed left-0 top-[60px] w-full bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-200 z-50"
           >
             <div className="max-w-screen-xl mx-auto">
               {/* Search input */}
@@ -320,150 +301,38 @@ const SearchBar = ({ darkNavbar }) => {
                 </div>
               </div>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            {/* Only show filters and results if there's a search query */}
-            {searchQuery && (
-              <>
-                {/* Empty spacer div for separation */}
-                <div className="h-16 bg-gray-50"></div>
-                
-                <div className="max-w-screen-xl mx-auto">
-                  <div className="flex flex-col md:flex-row">
-                    {/* Filters column */}
-                    <div className="w-full md:w-64 p-4">
-                      {/* Color filter */}
-                      <div className="mb-6">
-                        <h3 className="text-uppercase mb-2 font-medium text-sm text-gray-700">COLOUR</h3>
-                        <div className="w-full h-px bg-gray-200 mb-3"></div>
-                        <div className="grid grid-cols-3 gap-x-1 gap-y-2">
-                          {colorOptions.map((color) => (
-                            <button
-                              key={color.id}
-                              onClick={() => handleColorSelect(color.id)}
-                              className={`w-8 h-8 rounded-full mx-auto ${
-                                color.border ? 'border border-gray-300' : ''
-                              } ${
-                                selectedColor === color.id ? 'ring-1 ring-black' : ''
-                              }`}
-                              style={{ backgroundColor: color.color }}
-                              aria-label={`Select ${color.id} color`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Size filter */}
-                      <div className="mb-6">
-                        <h3 className="text-uppercase mb-2 font-medium text-sm text-gray-700">SIZE</h3>
-                        <div className="w-full h-px bg-gray-200 mb-3"></div>
-                        <div className="grid grid-cols-3 gap-y-2">
-                          {sizeOptions.map((size) => (
-                            <button
-                              key={size}
-                              onClick={() => handleSizeSelect(size)}
-                              className={`w-10 h-10 flex items-center justify-center border ${
-                                selectedSize === size 
-                                  ? 'border-black bg-black text-gray-200' 
-                                  : 'border-gray-300 hover:border-gray-500 text-gray-700'
-                              }`}
-                            >
-                              {size}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Category filter */}
-                      <div className="mb-6">
-                        <h3 className="text-uppercase mb-2 font-medium text-sm text-gray-700">CATEGORY</h3>
-                        <div className="w-full h-px bg-gray-200 mb-3"></div>
-                        <div className="space-y-2">
-                          {categories.map((category) => (
-                            <div key={category.id} className="flex items-center">
-                              <button
-                                onClick={() => handleCategorySelect(category.id)}
-                                className={`text-gray-700 hover:text-black ${
-                                  selectedCategory === category.id 
-                                  ? 'font-medium underline' 
-                                  : 'hover:underline'
-                                }`}
-                              >
-                                {category.name}
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Empty spacer div for separation between filters and results */}
-                    <div className="hidden md:block w-6 bg-gray-50"></div>
-
-                    {/* Results column */}
-                    <div className="w-full md:flex-1 p-4">
-                      <div className="flex justify-between items-center border-b border-gray-100 pb-2 mb-4">
-                        <h3 className="text-uppercase font-medium text-sm text-gray-700">PRODUCT RESULTS</h3>
-                        {searchResults.length > 0 && (
-                          <button 
-                            onClick={goToSearchResults}
-                            className="text-sm text-gray-600 hover:text-black underline"
-                          >
-                            See all results
-                          </button>
-                        )}
-                      </div>
-
-                      {loading && (
-                        <div className="text-center py-6">
-                          <div className="inline-block h-6 w-6 border-2 border-t-black border-gray-200 rounded-full animate-spin"></div>
-                          <p className="mt-3 text-gray-600">
-                            Searching...
-                          </p>
-                        </div>
-                      )}
-
-                      {!loading && searchResults.length === 0 && searchQuery && (
-                        <div className="text-center py-6">
-                          <p className="text-gray-600">
-                            No results found for "{searchQuery}"
-                          </p>
-                          <p className="text-sm text-gray-500 mt-2">
-                            Try a different search term or browse our collections
-                          </p>
-                        </div>
-                      )}
-
-                      {!loading && searchResults.length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                          {searchResults.map(product => (
-                            <div 
-                              key={product.id}
-                              className="cursor-pointer group"
-                              onClick={() => handleResultClick(product.id)}
-                            >
-                              {/* Product Image */}
-                              <div className="aspect-[3/4] overflow-hidden bg-gray-100 mb-2">
-                                <img
-                                  src={product.image || product.images?.[0] || "/images/placeholder.jpg"}
-                                  alt={product.title}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                              </div>
-                              
-                              {/* Product Info */}
-                              <div>
-                                <h4 className="text-xs uppercase truncate text-gray-700">{product.title}</h4>
-                                <p className="text-xs text-gray-600 mt-1 font-medium">₦{parseFloat(product.price).toLocaleString()}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+      {/* Filters and Results - separate bottom part with clear gap */}
+      <AnimatePresence>
+        {isOpen && showFilters && searchQuery && (
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ duration: 0.4 }}
+            className="fixed left-0 bottom-0 w-full bg-white"
+            style={{ 
+              height: 'calc(100vh - 180px)', 
+              top: 'auto',
+              marginTop: '40px'
+            }}
+          >
+            <SearchFiltersAndResults 
+              searchQuery={searchQuery}
+              searchResults={searchResults}
+              loading={loading}
+              selectedCategory={selectedCategory}
+              selectedColor={selectedColor}
+              selectedSize={selectedSize}
+              handleColorSelect={handleColorSelect}
+              handleSizeSelect={handleSizeSelect}
+              handleCategorySelect={handleCategorySelect}
+              handleResultClick={handleResultClick}
+              goToSearchResults={goToSearchResults}
+            />
           </motion.div>
         )}
       </AnimatePresence>

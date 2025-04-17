@@ -13,7 +13,6 @@ import { FaHeart } from "react-icons/fa";
 import StarRating from "../components/StarRating";
 import cmsService from "../services/cmsService";
 import CustomersReviews from "../components/CustomersReviews";
-import { useRef } from "react";
 import SizeGuideModal from "../components/SizeGuideModal";
 import api from "../services/api";
 import ColorVariants from "../components/ColorVaraint";
