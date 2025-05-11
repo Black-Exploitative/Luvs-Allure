@@ -141,7 +141,7 @@ const ProductDetailsPage = () => {
 
     // Cleanup when component unmounts
     return () => {
-      document.title = "Luv's Allure";
+      document.title = "Luv's Allure"; // Reset to default
     };
   }, [product, productName]);
 
@@ -1216,7 +1216,7 @@ const ProductDetailsPage = () => {
           <div className="mb-8 md:mb-0 md:mr-[50px] w-full md:w-auto md:flex-1">
             <ProductCarousel images={displayImages} />
 
-            {/* Related Products */}
+            {/* Related Products - Also inside the max-w-screen-xl container */}
             <div className="mt-[50px]">
               <h2 className="text-[15px] mb-4 text-center">STYLE IT WITH</h2>
               {loadingRelated ? (
@@ -1278,7 +1278,7 @@ const ProductDetailsPage = () => {
 
             <hr className="border-t border-gray-300 my-4" />
 
-            {/* Color Selection  */}
+            {/* Color Selection - Only show if there are colors */}
             <ColorVariants
               product={product}
               productId={productId}
@@ -1473,11 +1473,13 @@ const ProductDetailsPage = () => {
         )}
       </div>
 
-     
+      <div ref={reviewsRef}>
+        <CustomersReviews productName={product.name} />
+      </div>
 
       <Footer />
     </>
   );
 };
 
-export default ProductDetailsPage;
+export default ProductDetailsPage
